@@ -108,22 +108,25 @@ DNS_SERVICE_IP=10.3.0.10
 ETCD_ENDPOINTS=$(set_endpoints)
 INITIAL_CLUSTER=$(set_initial_cluster)
 
+
 for ip in $masterip; do
   ADVERTISE_IP=$ip
   mkdir -p $token/master/$ip
 
   for f in $(find $config/master -type f -printf "%f\n"); do
-    touch $output/master/$ip/$f
+    touch $token/master/$ip/$f
     eval "echo \"`cat $config/master/$f`\"" > $token/master/$ip/$f
   done
 done
 
 for ip in $workerips; do
   ADVERTISE_IP=$ip
+  MASTER_HOST=$masterip
+
   mkdir -p $token/worker/$ip
 
   for f in $(find $config/worker -type f -printf "%f\n"); do
-    touch $output/worker/$ip/$f
+    touch $token/worker/$ip/$f
     eval "echo \"`cat $config/worker/$f`\"" > $token/worker/$ip/$f
   done
 done
