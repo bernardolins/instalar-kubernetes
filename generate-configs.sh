@@ -1,6 +1,6 @@
 #!/bin/bash
 
-args=$(getopt -l "dir:help" -o "d:h" -- "$@")
+args=$(getopt -l "dir:output-dir:file:help" -o "d:o:f:h" -- "$@")
 
 eval set -- "$args"
 
@@ -15,6 +15,14 @@ while [ $# -ge 1 ]; do
       config="$2"
       shift
       ;;
+     -o|--output-dir)
+      output="$2"
+      shift
+      ;;
+     -f|--file)
+      file="$2"
+      shift
+      ;;
     -h|--help)
       printUsage
       exit 0
@@ -24,17 +32,17 @@ while [ $# -ge 1 ]; do
 done
 
 ###### kubernetes ######
-version=$(cat $config | jsawk 'return this.version')
-token=$(cat $config | jsawk 'return this.token')
+version=$(cat $file | jsawk 'return this.version')
+token=$(cat $file | jsawk 'return this.token')
 
 ####### master #######
-masterip=$(cat $config | jsawk 'return this.master.ip')
-masterhostname=$(cat $config | jsawk 'return this.master.hostname')
-masterinterface=$(cat $config | jsawk 'return this.master.interface')
-masteriphostname=$(cat $config | jsawk -n 'out (this.master.hostname + "=http://" + this.master.ip + ":2380")')
+masterip=$(cat $file | jsawk 'return this.master.ip')
+masterhostname=$(cat $file | jsawk 'return this.master.hostname')
+masterinterface=$(cat $file | jsawk 'return this.master.interface')
+masteriphostname=$(cat $file | jsawk -n 'out (this.master.hostname + "=http://" + this.master.ip + ":2380")')
 
 ###### workers ######
-workers=$(cat $config | jsawk 'return this.workers')
+workers=$(cat $file | jsawk 'return this.workers')
 
 workerips=$(echo $workers | jsawk -n 'out(this.ip)')
 workerhostnames=$(echo $workers | jsawk -n 'out(this.hostname)')
@@ -97,8 +105,25 @@ K8S_SERVICE_IP=10.3.0.1
 DNS_SERVICE_IP=10.3.0.10
 
 ###### Cluster specific ######
-
 ETCD_ENDPOINTS=$(set_endpoints)
 INITIAL_CLUSTER=$(set_initial_cluster)
 
-echo $INITIAL_CLUSTER
+for ip in $masterip; do
+  ADVERTISE_IP=$ip
+  mkdir -p $token/master/$ip
+
+  for f in $(find $config/master -type f -printf "%f\n"); do
+    touch $output/master/$ip/$f
+    eval "echo \"`cat $config/master/$f`\"" > $token/master/$ip/$f
+  done
+done
+
+for ip in $workerips; do
+  ADVERTISE_IP=$ip
+  mkdir -p $token/worker/$ip
+
+  for f in $(find $config/worker -type f -printf "%f\n"); do
+    touch $output/worker/$ip/$f
+    eval "echo \"`cat $config/worker/$f`\"" > $token/worker/$ip/$f
+  done
+done
