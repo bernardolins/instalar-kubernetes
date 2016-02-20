@@ -1,0 +1,21 @@
+{
+  "version": "v1.1.6",
+  "token": "unique-cluster-id",
+  "master": { 
+    "hostname": "master01",
+    "ip": "172.17.0.1",
+    "interface": "enp4s3"
+  },
+  "workers": [
+    {
+      "hostname": "worker01",
+      "ip": "172.17.0.2",
+      "interface": "enp4s3"
+    },
+    {
+      "hostname": "worker02",
+      "ip": "172.17.0.3",
+      "interface": "enp4s3"
+    }
+  ]
+}
