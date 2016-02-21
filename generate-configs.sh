@@ -47,7 +47,6 @@ workers=$(cat $file | jsawk 'return this.workers')
 workerips=$(echo $workers | jsawk -n 'out(this.ip)')
 workerhostnames=$(echo $workers | jsawk -n 'out(this.hostname)')
 workerinterfaces=$(echo $workers | jsawk -n 'out (this.interface)')
-
 workeriphostname=$(echo $workers | jsawk -n 'out (this.hostname + "=http://" + this.ip + ":2380")')
 
 function set_endpoints {
@@ -58,7 +57,7 @@ function set_endpoints {
       endpoints="$endpoints,"
     fi
 
-    address="http://$ip:2379" 
+    address="http://$NAME:2379" 
     endpoints="$endpoints$address"
   done
 
@@ -67,7 +66,7 @@ function set_endpoints {
       endpoints="$endpoints,"
     fi
 
-    address="http://$ip:2379" 
+    address="http://$NAME:2379" 
     endpoints="$endpoints$address"
   done
 
@@ -105,28 +104,38 @@ K8S_SERVICE_IP=10.3.0.1
 DNS_SERVICE_IP=10.3.0.10
 
 ###### Cluster specific ######
+TOKEN=$token
 ETCD_ENDPOINTS=$(set_endpoints)
 INITIAL_CLUSTER=$(set_initial_cluster)
 
 
-for ip in $masterip; do
-  ADVERTISE_IP=$ip
-  mkdir -p $token/master/$ip
+for (( i=0; i<${#masterip[@]}; i++ )); do
+  ADVERTISE_IP=${masterip[$i]}
+  NAME=${masterhostname[$i]}
+  NETWORK_INTERFACE=${masterinterface[$i]}
+
+  mkdir -p $token/master/$NAME
 
   for f in $(find $config/master -type f -printf "%f\n"); do
-    touch $token/master/$ip/$f
-    eval "echo \"`cat $config/master/$f`\"" > $token/master/$ip/$f
+    touch $token/master/$NAME/$f
+    eval "echo \"`cat $config/master/$f`\"" > $token/master/$NAME/$f
   done
 done
 
-for ip in $workerips; do
-  ADVERTISE_IP=$ip
-  MASTER_HOST=$masterip
+iparray=($workerips)
+hostnamearray=($workerhostnames)
+interfacearray=($workerinterfaces)
 
-  mkdir -p $token/worker/$ip
+for (( i=0; i<${#iparray[@]}; i++ )); do
+  MASTER_HOST=$masterip
+  ADVERTISE_IP=${iparray[$i]}
+  NAME=${hostnamearray[$i]}
+  NETWORK_INTERFACE=${interfacearray[$i]}
+
+  mkdir -p $token/worker/$NAME
 
   for f in $(find $config/worker -type f -printf "%f\n"); do
-    touch $token/worker/$ip/$f
-    eval "echo \"`cat $config/worker/$f`\"" > $token/worker/$ip/$f
+    touch $token/worker/$NAME/$f
+    eval "echo \"`cat $config/worker/$f`\"" > $token/worker/$NAME/$f
   done
 done
