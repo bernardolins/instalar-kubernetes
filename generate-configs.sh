@@ -108,20 +108,19 @@ TOKEN=$token
 ETCD_ENDPOINTS=$(set_endpoints)
 INITIAL_CLUSTER=$(set_initial_cluster)
 
+###### Generate master files ######
+ADVERTISE_IP=$masterip
+NAME=$masterhostname
+NETWORK_INTERFACE=$masterinterface
 
-for (( i=0; i<${#masterip[@]}; i++ )); do
-  ADVERTISE_IP=${masterip[$i]}
-  NAME=${masterhostname[$i]}
-  NETWORK_INTERFACE=${masterinterface[$i]}
+mkdir -p $token/master/$NAME
 
-  mkdir -p $token/master/$NAME
-
-  for f in $(find $config/master -type f -printf "%f\n"); do
-    touch $token/master/$NAME/$f
-    eval "echo \"`cat $config/master/$f`\"" > $token/master/$NAME/$f
-  done
+for f in $(find $config/master -type f -printf "%f\n"); do
+  touch $token/master/$NAME/$f
+  eval "echo \"`cat $config/master/$f`\"" > $token/master/$NAME/$f
 done
 
+###### Generate worker files ######
 iparray=($workerips)
 hostnamearray=($workerhostnames)
 interfacearray=($workerinterfaces)
