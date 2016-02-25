@@ -138,3 +138,6 @@ for (( i=0; i<${#iparray[@]}; i++ )); do
     eval "echo \"`cat $config/worker/$f`\"" > $token/worker/$NAME/$f
   done
 done
+
+###### SSL assets ######
+source generate-certificates.sh
