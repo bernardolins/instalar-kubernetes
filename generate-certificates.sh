@@ -49,6 +49,6 @@ openssl genrsa -out $token/worker/${hostnamearray[$i]}/${hostnamearray[$i]}-work
 
 WORKER_IP=${iparray[$i]} openssl req -new -key $token/worker/${hostnamearray[$i]}/${hostnamearray[$i]}-worker-key.pem -out $token/worker/${hostnamearray[$i]}/${hostnamearray[$i]}-worker.csr -subj "/CN=${hostnamearray[$i]}" -config $token/worker/${hostnamearray[$i]}/${hostnamearray[$i]}-openssl.cnf
 
-WORKER_IP=${iparray[$i]} openssl x509 -req -in $token/worker/${hostnamearray[$i]}/${hostnamearray[$i]}-worker.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out $token/worker/${hostnamearray[$i]}/${hostnamearray[$i]}-worker.pem -days 365 -extensions v3_req -extfile $token/worker/${hostnamearray[$i]}/${hostnamearray[$i]}-openssl.cnf
+WORKER_IP=${iparray[$i]} openssl x509 -req -in $token/worker/${hostnamearray[$i]}/${hostnamearray[$i]}-worker.csr -CA $token/ca.pem -CAkey $token/ca-key.pem -CAcreateserial -out $token/worker/${hostnamearray[$i]}/${hostnamearray[$i]}-worker.pem -days 365 -extensions v3_req -extfile $token/worker/${hostnamearray[$i]}/${hostnamearray[$i]}-openssl.cnf
 
 done
