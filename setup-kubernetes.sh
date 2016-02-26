@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-args=$(getopt -l "config-dir:install-dir:version:type:help" -o "c:i:v:t:h" -- "$@")
+args=$(getopt -l "config-dir:ssl-dir:version:type:help" -o "c:s:v:t:h" -- "$@")
 
 eval set -- "$args"
 
@@ -16,8 +16,8 @@ while [ $# -ge 1 ]; do
       config="$2"
       shift
       ;;
-    -i|--install-dir)
-      install="$2"
+    -s|--ssl-dir)
+      ssl="$2"
       shift
       ;;
     -v|--kube-version)
