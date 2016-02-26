@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-args=$(getopt -l "config-dir:install-dir:help" -o "c:i:h" -- "$@")
+args=$(getopt -l "config-dir:install-dir:version:type:help" -o "c:i:v:t:h" -- "$@")
 
 eval set -- "$args"
 
@@ -12,21 +12,31 @@ while [ $# -ge 1 ]; do
       shift
       break
       ;;
-     -c|--config-dir)
+    -c|--config-dir)
       config="$2"
       shift
       ;;
-     -i|--install-dir)
+    -i|--install-dir)
       install="$2"
       shift
       ;;
-     -t|--type)
+    -v|--kube-version)
+      version="$2"
+      shift
+      ;;
+    -t|--type)
       type="$2"
       shift
       ;;
   esac
   shift
 done
+
+if [ ! $version ]; then
+  echo "---- Must specify a version!"
+  echo "format: v1.x.x"
+  exit 1
+fi
 
 kubernetes_dir=/etc/kubernetes
 kubernetes_multinode_dir=/srv/kubernetes
@@ -36,6 +46,20 @@ kubernetes_tls_dir=$kubernetes_dir/ssl
 multinode_config_dir=$kubernetes_multinode_dir/manifests
 
 systemd_dir=/etc/systemd/system
+
+if [ ! -f  /opt/bin/kubelet ] || [ ! -f /opt/bin/hyperkube ]; then
+  echo "download binaries from https://storage.googleapis.com/"
+  echo "version: $version"
+  
+  wget https://storage.googleapis.com/kubernetes-release/release/$version/bin/linux/amd64/kubelet
+  wget https://storage.googleapis.com/kubernetes-release/release/$version/bin/linux/amd64/hyperkube
+  
+  chmod +x kubelet
+  chmod +x hyperkube
+  
+  mkdir -p /opt/bin
+  mv kubelet hyperkube /opt/bin
+fi
 
 echo "installing kubernetes - make sure you have all config files in config directory!"
 echo "if you are not sure refer to https://coreos.com/kubernetes/docs/latest/getting-started.html"
@@ -47,12 +71,12 @@ mkdir -p $kubernetes_tls_dir
 mkdir -p $kubernetes_multinode_dir
 mkdir -p $multinode_config_dir
 
-echo "copying kubelet.unit to $systemd_dir ..."
-cp $config/kubelet.unit $systemd_dir
+echo "copying kubelet.service to $systemd_dir ..."
+cp $config/kubelet.service $systemd_dir
 
 if [ $type = "master" ]; then
   echo "copying manifests to $default_manifest_dir ..."
-  cp $config/kube-api-server.yaml $default_manifest_dir
+  cp $config/kube-apiserver.yaml $default_manifest_dir
   cp $config/kube-proxy.yaml $default_manifest_dir
   cp $config/kube-podmaster.yaml $default_manifest_dir
 
