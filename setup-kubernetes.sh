@@ -91,3 +91,10 @@ else
   echo "invalid type, try master or worker"
   exit -1
 fi
+
+if [ $ssl != ""];then 
+  echo "copying ssl certificates to $kubernetes_dir"
+  cp $ssl/* $kubernetes_tls_dir
+else
+  echo "warning: no ssl path specified!"
+fi
