@@ -55,11 +55,11 @@ cat << EOF > $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-openssl
   IP.1 = ${iparray[$i]}
 EOF
 
-openssl genrsa -out $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-worker-key.pem 2048
+openssl genrsa -out $token/worker/${hostnamearray[$i]}/ssl/worker-key.pem 2048
 
-WORKER_IP=${iparray[$i]} openssl req -new -key $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-worker-key.pem -out $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-worker.csr -subj "/CN=${hostnamearray[$i]}" -config $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-openssl.cnf
+WORKER_IP=${iparray[$i]} openssl req -new -key $token/worker/${hostnamearray[$i]}/ssl/worker-key.pem -out $token/worker/${hostnamearray[$i]}/ssl/worker.csr -subj "/CN=${hostnamearray[$i]}" -config $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-openssl.cnf
 
-WORKER_IP=${iparray[$i]} openssl x509 -req -in $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-worker.csr -CA $token/ca.pem -CAkey $token/ca-key.pem -CAcreateserial -out $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-worker.pem -days 365 -extensions v3_req -extfile $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-openssl.cnf
+WORKER_IP=${iparray[$i]} openssl x509 -req -in $token/worker/${hostnamearray[$i]}/ssl/worker.csr -CA $token/ca.pem -CAkey $token/ca-key.pem -CAcreateserial -out $token/worker/${hostnamearray[$i]}/ssl/worker.pem -days 365 -extensions v3_req -extfile $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-openssl.cnf
 
 cp $token/ca.pem $token/worker/${hostnamearray[$i]}/ssl
 rm -f $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-openssl.cnf
