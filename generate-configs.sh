@@ -57,7 +57,7 @@ function set_endpoints {
       endpoints="$endpoints,"
     fi
 
-    address="http://$NAME:2379" 
+    address="http://$ip:2379" 
     endpoints="$endpoints$address"
   done
 
@@ -66,7 +66,7 @@ function set_endpoints {
       endpoints="$endpoints,"
     fi
 
-    address="http://$NAME:2379" 
+    address="http://$ip:2379" 
     endpoints="$endpoints$address"
   done
 
