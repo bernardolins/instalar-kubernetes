@@ -1,11 +1,11 @@
 #cloud-config
 
 ---
-hostname: ${HOSTNAME}
+hostname: ${NAME}
 
 coreos:
   etcd2:
-    name: ${HOSTNAME}
+    name: ${NAME}
     initial-cluster-token: ${TOKEN}
     initial-cluster: ${INITIAL_CLUSTER}
     initial-cluster-state: new
