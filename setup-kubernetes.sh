@@ -90,7 +90,7 @@ else
   exit -1
 fi
 
-if [ $ssl != ""];then 
+if [ $ssl != "" ]; then 
   echo "copying ssl certificates to $kubernetes_dir"
   cp $ssl/* $kubernetes_tls_dir
 else
