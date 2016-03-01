@@ -47,18 +47,16 @@ multinode_config_dir=$kubernetes_multinode_dir/manifests
 
 systemd_dir=/etc/systemd/system
 
-if [ ! -f  /opt/bin/kubelet ] || [ ! -f /opt/bin/hyperkube ]; then
-  echo "download binaries from https://storage.googleapis.com/"
+if [ ! -f  /opt/bin/kubelet ]; then
+  echo "download kubelet binary from https://storage.googleapis.com/"
   echo "version: $version"
   
   wget https://storage.googleapis.com/kubernetes-release/release/$version/bin/linux/amd64/kubelet
-  wget https://storage.googleapis.com/kubernetes-release/release/$version/bin/linux/amd64/hyperkube
   
   chmod +x kubelet
-  chmod +x hyperkube
   
   mkdir -p /opt/bin
-  mv kubelet hyperkube /opt/bin
+  mv kubelet /opt/bin
 fi
 
 echo "installing kubernetes - make sure you have all config files in config directory!"
