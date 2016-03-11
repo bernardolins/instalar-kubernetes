@@ -36,32 +36,29 @@ version=$(cat $file | jsawk 'return this.version')
 token=$(cat $file | jsawk 'return this.token')
 
 ####### master #######
-masterip=$(cat $file | jsawk 'return this.master.ip')
-masterhostname=$(cat $file | jsawk 'return this.master.hostname')
-masterinterface=$(cat $file | jsawk 'return this.master.interface')
-masteriphostname=$(cat $file | jsawk -n 'out (this.master.hostname + "=http://" + this.master.ip + ":2380")')
+master_ip=$(cat $file | jsawk 'return this.master.ip')
+master_hostname=$(cat $file | jsawk 'return this.master.hostname')
+master_interface=$(cat $file | jsawk 'return this.master.interface')
 
 ###### workers ######
 workers=$(cat $file | jsawk 'return this.workers')
 
-workerips=$(echo $workers | jsawk -n 'out(this.ip)')
-workerhostnames=$(echo $workers | jsawk -n 'out(this.hostname)')
-workerinterfaces=$(echo $workers | jsawk -n 'out (this.interface)')
-workeriphostname=$(echo $workers | jsawk -n 'out (this.hostname + "=http://" + this.ip + ":2380")')
+worker_ips=$(echo $workers | jsawk -n 'out(this.ip)')
+worker_hostnames=$(echo $workers | jsawk -n 'out(this.hostname)')
+worker_interfaces=$(echo $workers | jsawk -n 'out (this.interface)')
 
-function set_endpoints {
+###### etcd ######
+etcd=$(cat $file | jsawk 'return this.etcd')
+
+etcd_ips=$(echo $etcd | jsawk -n 'out(this.ip)')
+etcd_hostnames=$(echo $etcd | jsawk -n 'out(this.hostname)')
+etcd_nodes=$(echo $etcd | jsawk -n 'out (this.hostname + "=http://" + this.ip + ":2380")')
+etcd_interfaces=$(echo $etcd | jsawk -n 'out (this.interface)')
+
+function set_etcd_endpoints {
   endpoints=""
 
-  for ip in $masterip; do
-    if [ -n "$endpoints" ]; then
-      endpoints="$endpoints,"
-    fi
-
-    address="http://$ip:2379" 
-    endpoints="$endpoints$address"
-  done
-
-  for ip in $workerips; do
+  for ip in $etcd_ips; do
     if [ -n "$endpoints" ]; then
       endpoints="$endpoints,"
     fi
@@ -76,15 +73,7 @@ function set_endpoints {
 function set_initial_cluster {
   nodes=""
 
-  for node in $masteriphostname; do
-    if [ -n "$nodes" ]; then
-      nodes="$nodes,"
-    fi
-
-    nodes="$nodes$node"
-  done
-
-  for node in $workeriphostname; do
+  for node in $etcd_nodes; do
     if [ -n "$nodes" ]; then
       nodes="$nodes,"
     fi
@@ -104,40 +93,65 @@ K8S_SERVICE_IP=10.3.0.1
 DNS_SERVICE_IP=10.3.0.10
 VERSION=$version
 
+###### Setting up variables ######
+
+###### Defaults ######
+POD_NETWORK=10.2.0.0/16
+SERVICE_IP_RANGE=10.3.0.0/24
+K8S_SERVICE_IP=10.3.0.1
+DNS_SERVICE_IP=10.3.0.10
+VERSION=$version
+
 ###### Cluster specific ######
 TOKEN=$token
-ETCD_ENDPOINTS=$(set_endpoints)
+ETCD_ENDPOINTS=$(set_etcd_endpoints)
 INITIAL_CLUSTER=$(set_initial_cluster)
 
-###### Generate master files ######
-ADVERTISE_IP=$masterip
-NAME=$masterhostname
-NETWORK_INTERFACE=$masterinterface
+ADVERTISE_IP=$master_ip
+NAME=$master_hostname
+NETWORK_INTERFACE=$master_interface
+MASTER_HOST=$master_ip
 
+output_file=cloud-config.yaml
+
+#### MASTER ####
+f=$(find $config -name '*kubernetes*master*.yaml' -or -name '*kubernetes*master*.yml')
 mkdir -p $token/master/$NAME
+touch $token/master/$NAME/$file
+eval "echo \"`cat $f`\"" > $token/master/$NAME/$file
 
-for f in $(find $config/master -type f -printf "%f\n"); do
-  touch $token/master/$NAME/$f
-  eval "echo \"`cat $config/master/$f`\"" > $token/master/$NAME/$f
-done
-
-###### Generate worker files ######
-iparray=($workerips)
-hostnamearray=($workerhostnames)
-interfacearray=($workerinterfaces)
+#### WORKER ####
+iparray=($worker_ips)
+hostnamearray=($worker_hostnames)
+interfacearray=($worker_interfaces)
 
 for (( i=0; i<${#iparray[@]}; i++ )); do
-  MASTER_HOST=$masterip
   ADVERTISE_IP=${iparray[$i]}
   NAME=${hostnamearray[$i]}
   NETWORK_INTERFACE=${interfacearray[$i]}
 
   mkdir -p $token/worker/$NAME
 
-  for f in $(find $config/worker -type f -printf "%f\n"); do
-    touch $token/worker/$NAME/$f
-    eval "echo \"`cat $config/worker/$f`\"" > $token/worker/$NAME/$f
-  done
+  f=$(find $config -name '*kubernetes*worker*.yaml' -or -name '*kubernetes*worker*.yml')
+  touch $token/worker/$NAME/$output_file
+  eval "echo \"`cat $f`\"" > $token/worker/$NAME/$output_file
+done
+
+#### ETCD ####
+iparray=($etcd_ips)
+hostnamearray=($etcd_hostnames)
+interfacearray=($etcd_interfaces)
+
+for (( i=0; i<${#iparray[@]}; i++ )); do
+  ADVERTISE_IP=${iparray[$i]}
+  NAME=${hostnamearray[$i]}
+  NETWORK_INTERFACE=${interfacearray[$i]}
+
+  mkdir -p $token/etcd/$NAME
+
+  f=$(find $config -name '*etcd*.yaml' -or -name '*etcd*.yml')
+  touch $token/etcd/$NAME/$output_file
+  eval "echo \"`cat $f`\"" > $token/etcd/$NAME/$output_file
 done
 
 ###### SSL assets ######
