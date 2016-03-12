@@ -37,12 +37,12 @@ rm -rf $token/*.csr
 rm -rf $token/*.srl
 
 #### Generate workers certificates
-for (( i=0; i<${#iparray[@]}; i++ )); do
+for (( i=0; i<${#worker_ip_array[@]}; i++ )); do
 
-mkdir -p $token/worker/${hostnamearray[$i]}/ssl
+mkdir -p $token/worker/${worker_hostname_array[$i]}/ssl
 
 #### Worker config
-cat << EOF > $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-openssl.cnf
+cat << EOF > $token/worker/${worker_hostname_array[$i]}/ssl/${worker_hostname_array[$i]}-openssl.cnf
   [req]
   req_extensions = v3_req
   distinguished_name = req_distinguished_name
@@ -52,18 +52,18 @@ cat << EOF > $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-openssl
   keyUsage = nonRepudiation, digitalSignature, keyEncipherment
   subjectAltName = @alt_names
   [alt_names]
-  IP.1 = ${iparray[$i]}
+  IP.1 = ${worker_ip_array[$i]}
 EOF
 
-openssl genrsa -out $token/worker/${hostnamearray[$i]}/ssl/worker-key.pem 2048
+openssl genrsa -out $token/worker/${worker_hostname_array[$i]}/ssl/worker-key.pem 2048
 
-WORKER_IP=${iparray[$i]} openssl req -new -key $token/worker/${hostnamearray[$i]}/ssl/worker-key.pem -out $token/worker/${hostnamearray[$i]}/ssl/worker.csr -subj "/CN=${hostnamearray[$i]}" -config $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-openssl.cnf
+WORKER_IP=${worker_ip_array[$i]} openssl req -new -key $token/worker/${worker_hostname_array[$i]}/ssl/worker-key.pem -out $token/worker/${worker_hostname_array[$i]}/ssl/worker.csr -subj "/CN=${worker_hostname_array[$i]}" -config $token/worker/${worker_hostname_array[$i]}/ssl/${worker_hostname_array[$i]}-openssl.cnf
 
-WORKER_IP=${iparray[$i]} openssl x509 -req -in $token/worker/${hostnamearray[$i]}/ssl/worker.csr -CA $token/ca.pem -CAkey $token/ca-key.pem -CAcreateserial -out $token/worker/${hostnamearray[$i]}/ssl/worker.pem -days 365 -extensions v3_req -extfile $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-openssl.cnf
+WORKER_IP=${worker_ip_array[$i]} openssl x509 -req -in $token/worker/${worker_hostname_array[$i]}/ssl/worker.csr -CA $token/ca.pem -CAkey $token/ca-key.pem -CAcreateserial -out $token/worker/${worker_hostname_array[$i]}/ssl/worker.pem -days 365 -extensions v3_req -extfile $token/worker/${worker_hostname_array[$i]}/ssl/${worker_hostname_array[$i]}-openssl.cnf
 
-cp $token/ca.pem $token/worker/${hostnamearray[$i]}/ssl
-rm -f $token/worker/${hostnamearray[$i]}/ssl/${hostnamearray[$i]}-openssl.cnf
-rm -f $token/worker/${hostnamearray[$i]}/ssl/*.csr
+cp $token/ca.pem $token/worker/${worker_hostname_array[$i]}/ssl
+rm -f $token/worker/${worker_hostname_array[$i]}/ssl/${worker_hostname_array[$i]}-openssl.cnf
+rm -f $token/worker/${worker_hostname_array[$i]}/ssl/*.csr
 
 done
 

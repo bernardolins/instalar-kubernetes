@@ -121,14 +121,14 @@ touch $token/master/$NAME/$output_file
 eval "echo \"`cat $f`\"" > $token/master/$NAME/$output_file
 
 #### WORKER ####
-iparray=($worker_ips)
-hostnamearray=($worker_hostnames)
-interfacearray=($worker_interfaces)
+worker_ip_array=($worker_ips)
+worker_hostname_array=($worker_hostnames)
+woerker_interface_array=($worker_interfaces)
 
-for (( i=0; i<${#iparray[@]}; i++ )); do
-  ADVERTISE_IP=${iparray[$i]}
-  NAME=${hostnamearray[$i]}
-  NETWORK_INTERFACE=${interfacearray[$i]}
+for (( i=0; i<${#worker_ip_array[@]}; i++ )); do
+  ADVERTISE_IP=${worker_ip_array[$i]}
+  NAME=${worker_hostname_array[$i]}
+  NETWORK_INTERFACE=${woerker_interface_array[$i]}
 
   mkdir -p $token/worker/$NAME
 
@@ -138,14 +138,14 @@ for (( i=0; i<${#iparray[@]}; i++ )); do
 done
 
 #### ETCD ####
-iparray=($etcd_ips)
-hostnamearray=($etcd_hostnames)
-interfacearray=($etcd_interfaces)
+etcd_ip_array=($etcd_ips)
+etcd_hostname_array=($etcd_hostnames)
+etcd_interface_array=($etcd_interfaces)
 
-for (( i=0; i<${#iparray[@]}; i++ )); do
-  ADVERTISE_IP=${iparray[$i]}
-  NAME=${hostnamearray[$i]}
-  NETWORK_INTERFACE=${interfacearray[$i]}
+for (( i=0; i<${#etcd_ip_array[@]}; i++ )); do
+  ADVERTISE_IP=${etcd_ip_array[$i]}
+  NAME=${etcd_hostname_array[$i]}
+  NETWORK_INTERFACE=${etcd_interface_array[$i]}
 
   mkdir -p $token/etcd/$NAME
 
