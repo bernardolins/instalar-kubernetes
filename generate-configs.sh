@@ -95,7 +95,7 @@ POD_NETWORK=10.2.0.0/16
 SERVICE_IP_RANGE=10.3.0.0/24
 K8S_SERVICE_IP=10.3.0.1
 DNS_SERVICE_IP=10.3.0.10
-VERSION=$version
+KUBERNETES_VERSION=$version
 
 ###### Setting up variables ######
 
@@ -104,7 +104,7 @@ POD_NETWORK=10.2.0.0/16
 SERVICE_IP_RANGE=10.3.0.0/24
 K8S_SERVICE_IP=10.3.0.1
 DNS_SERVICE_IP=10.3.0.10
-VERSION=$version
+KUBERNETES_VERSION=$version
 
 ###### Cluster specific ######
 TOKEN=$token
