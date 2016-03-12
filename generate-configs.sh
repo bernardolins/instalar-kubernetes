@@ -31,6 +31,10 @@ while [ $# -ge 1 ]; do
   shift
 done
 
+if [ -z "$output" ]; then
+  output="."
+fi
+
 ###### kubernetes ######
 version=$(cat $file | jsawk 'return this.version')
 token=$(cat $file | jsawk 'return this.token')
@@ -116,9 +120,9 @@ output_file=cloud-config.yaml
 
 #### MASTER ####
 f=$(find $config -name '*kubernetes*master*.yaml' -or -name '*kubernetes*master*.yml')
-mkdir -p $token/master/$NAME
-touch $token/master/$NAME/$output_file
-eval "echo \"`cat $f`\"" > $token/master/$NAME/$output_file
+mkdir -p $output/$token/master/$NAME
+touch $output/$token/master/$NAME/$output_file
+eval "echo \"`cat $f`\"" > $output/$token/master/$NAME/$output_file
 
 #### WORKER ####
 worker_ip_array=($worker_ips)
@@ -130,11 +134,11 @@ for (( i=0; i<${#worker_ip_array[@]}; i++ )); do
   NAME=${worker_hostname_array[$i]}
   NETWORK_INTERFACE=${woerker_interface_array[$i]}
 
-  mkdir -p $token/worker/$NAME
+  mkdir -p $output/$token/worker/$NAME
 
   f=$(find $config -name '*kubernetes*worker*.yaml' -or -name '*kubernetes*worker*.yml')
-  touch $token/worker/$NAME/$output_file
-  eval "echo \"`cat $f`\"" > $token/worker/$NAME/$output_file
+  touch $output/$token/worker/$NAME/$output_file
+  eval "echo \"`cat $f`\"" > $output/$token/worker/$NAME/$output_file
 done
 
 #### ETCD ####
@@ -147,11 +151,11 @@ for (( i=0; i<${#etcd_ip_array[@]}; i++ )); do
   NAME=${etcd_hostname_array[$i]}
   NETWORK_INTERFACE=${etcd_interface_array[$i]}
 
-  mkdir -p $token/etcd/$NAME
+  mkdir -p $output/$token/etcd/$NAME
 
   f=$(find $config -name '*etcd*.yaml' -or -name '*etcd*.yml')
-  touch $token/etcd/$NAME/$output_file
-  eval "echo \"`cat $f`\"" > $token/etcd/$NAME/$output_file
+  touch $output/$token/etcd/$NAME/$output_file
+  eval "echo \"`cat $f`\"" > $output/$token/etcd/$NAME/$output_file
 done
 
 ###### SSL assets ######
