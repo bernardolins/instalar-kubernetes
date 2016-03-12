@@ -117,8 +117,8 @@ output_file=cloud-config.yaml
 #### MASTER ####
 f=$(find $config -name '*kubernetes*master*.yaml' -or -name '*kubernetes*master*.yml')
 mkdir -p $token/master/$NAME
-touch $token/master/$NAME/$file
-eval "echo \"`cat $f`\"" > $token/master/$NAME/$file
+touch $token/master/$NAME/$output_file
+eval "echo \"`cat $f`\"" > $token/master/$NAME/$output_file
 
 #### WORKER ####
 iparray=($worker_ips)
