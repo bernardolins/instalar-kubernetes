@@ -59,6 +59,13 @@ etcd_hostnames=$(echo $etcd | jsawk -n 'out(this.hostname)')
 etcd_nodes=$(echo $etcd | jsawk -n 'out (this.hostname + "=http://" + this.ip + ":2380")')
 etcd_interfaces=$(echo $etcd | jsawk -n 'out (this.interface)')
 
+###### kubectl ###### 
+kubectl=$(cat $file | jsawk 'return this.kubectl')
+
+kubectl_ips=$(echo $kubectl | jsawk -n 'out(this.ip)')
+kubectl_hostnames=$(echo $kubectl | jsawk -n 'out(this.hostname)')
+kubectl_interfaces=$(echo $kubectl | jsawk -n 'out (this.interface)')
+
 function set_etcd_endpoints {
   endpoints=""
 
@@ -111,6 +118,7 @@ TOKEN=$token
 ETCD_ENDPOINTS=$(set_etcd_endpoints)
 INITIAL_CLUSTER=$(set_initial_cluster)
 
+#### MASTER ####
 ADVERTISE_IP=$master_ip
 NAME=$master_hostname
 NETWORK_INTERFACE=$master_interface
@@ -118,7 +126,6 @@ MASTER_HOST=$master_ip
 
 output_file=cloud-config.yaml
 
-#### MASTER ####
 f=$(find $config -name '*kubernetes*master*.yaml' -or -name '*kubernetes*master*.yml')
 mkdir -p $output/$token/master/$NAME
 touch $output/$token/master/$NAME/$output_file
@@ -156,6 +163,24 @@ for (( i=0; i<${#etcd_ip_array[@]}; i++ )); do
   f=$(find $config -name '*etcd*.yaml' -or -name '*etcd*.yml')
   touch $output/$token/etcd/$NAME/$output_file
   eval "echo \"`cat $f`\"" > $output/$token/etcd/$NAME/$output_file
+done
+
+#### KUBECTL ####
+kubectl_ip_array=($kubectl_ips)
+kubectl_hostname_array=($kubectl_hostnames)
+kubectl_interface_array=($kubectl_interfaces)
+
+for (( i=0; i<${#kubectl_ip_array[@]}; i++ )); do
+  ADVERTISE_IP=${kubectl_ip_array[$i]}
+  NAME=${kubectl_hostname_array[$i]}
+  NETWORK_INTERFACE=${kubectl_interface_array[$i]}
+  MASTER_HOST=$master_ip
+
+  mkdir -p $output/$token/kubectl/$NAME
+
+  f=$(find $config -name '*kubectl*.yaml' -or -name '*kubectl*.yml')
+  touch $output/$token/kubectl/$NAME/$output_file
+  eval "echo \"`cat $f`\"" > $output/$token/kubectl/$NAME/$output_file
 done
 
 ###### SSL assets ######

@@ -34,5 +34,12 @@
       "ip": "172.17.0.103/24", 
       "interface": "enp4s3"
     }
+  ],
+  "kubectl": [ 
+    {
+      "hostname": "client01",
+      "ip": "172.17.0.151",
+      "interface": "eth1"
+    }
   ]
 }
